@@ -22,13 +22,11 @@ public class OrientationListener implements SensorEventListener {
 				SensorManager.SENSOR_DELAY_FASTEST);
 	}
 
-	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
 		// TODO Auto-generated method stub
 
 	}
 
-	@Override
 	public void onSensorChanged(SensorEvent event) {
 		if (event.sensor.getType() == Sensor.TYPE_ORIENTATION) {
 			float direction = event.values[0];
