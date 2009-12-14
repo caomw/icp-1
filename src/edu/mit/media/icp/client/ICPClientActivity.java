@@ -3,12 +3,16 @@
 
 package edu.mit.media.icp.client;
 
+import java.util.Set;
+
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import edu.mit.media.icp.client.State.Target;
 import edu.mit.media.icp.client.graphics.GLLayer;
 import edu.mit.media.icp.client.sensors.GPSListener;
 import edu.mit.media.icp.client.sensors.OrientationListener;
@@ -20,8 +24,16 @@ public class ICPClientActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		ol = new OrientationListener(this);
 		gpsl = new GPSListener(this);
-
-		setupWindow();
+		loadData();
+		//setupWindow();
+	}
+	
+	private void loadData(){
+		State.updateTargets();
+		Set<Target> ts = State.getTargets();
+		for(Target t : ts){
+			Log.e("target", t.toString());
+		}
 	}
 
 	private void setupWindow() {
@@ -41,7 +53,8 @@ public class ICPClientActivity extends Activity {
 		GLLayer layer = new GLLayer(this);
 
 		rl.addView(layer, width, height);
-		rl.addView(preview, width, height);
+		
+//		rl.addView(preview, width, height);
 
 		setContentView(rl);
 	}

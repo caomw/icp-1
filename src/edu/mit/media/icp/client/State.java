@@ -1,7 +1,16 @@
 package edu.mit.media.icp.client;
 
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Scanner;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 import android.location.Location;
 import android.util.Log;
@@ -14,7 +23,28 @@ public class State {
 	private ArrayList<StateListener> stateListeners;
 	private LinkedList<Location> locations;
 	private LinkedList<Orientation> orientations;
+	private HashSet<Target> targets;
 	public static final int HISTORY_SIZE = 3;
+
+	public class Target {
+		float lat;
+		float lng;
+		float theta;
+		float phi;
+		float psi;
+
+		public Target(float lat, float lng, float theta, float phi, float psi) {
+			this.lat = lat;
+			this.lng = lng;
+			this.theta = theta;
+			this.phi = phi;
+			this.psi = psi;
+		}
+		
+		public String toString(){
+			return "target:\n" + lat + "\n" + lng + "\n" + theta + "\n" + phi + "\n" + psi;
+		}
+	}
 
 	public class Orientation {
 		private float[] values;
@@ -40,6 +70,7 @@ public class State {
 		public float getRoll() {
 			return values[2];
 		}
+
 		public void setCompassDirection(float i) {
 			values[0] = i;
 		}
@@ -59,6 +90,7 @@ public class State {
 		locations = new LinkedList<Location>();
 		orientations = new LinkedList<Orientation>();
 		orientation = new Orientation();
+		targets = new HashSet<Target>();
 	}
 
 	/**
@@ -78,15 +110,68 @@ public class State {
 	 * Getters / Setters
 	 */
 
+	public static HashSet<Target> getTargets() {
+		return getInstance().targets;
+	}
+
+	public static void addTarget(Target t) {
+		getInstance().targets.add(t);
+	}
+
+	public static void clearTargets() {
+		getInstance().targets.clear();
+	}
+
+	/* temp */
+	private static final String END_OF_INPUT = "\\Z";
+
+	private static String getPageContent() {
+		String result = null;
+		URLConnection connection = null;
+		URL fURL = null;
+		try {
+			fURL = new URL("http://radiant-flower-17.heroku.com/target");
+			connection = fURL.openConnection();
+			Scanner scanner = new Scanner(connection.getInputStream());
+			scanner.useDelimiter(END_OF_INPUT);
+			result = scanner.next();
+		} catch (IOException ex) {
+			Log.e("data", "Cannot open connection to " + fURL.toString());
+		}
+		return result;
+	}
+
+	public static void updateTargets() {
+		clearTargets();
+
+		String s = getPageContent();
+		Object obj = JSONValue.parse(s);
+		JSONArray ja = (JSONArray)obj;
+		
+		for(int i = 0; i < ja.size(); i++){
+			String t = ja.get(i).toString();
+			JSONObject j = (JSONObject)JSONValue.parse(t);
+			JSONObject jo = (JSONObject)JSONValue.parse(j.get("target").toString());
+
+			float lat 	= ((Number)jo.get("lat")).floatValue();
+			float lng 	= ((Number)jo.get("lng")).floatValue();
+			float theta = ((Number)jo.get("theta")).floatValue();
+			float phi 	= ((Number)jo.get("phi")).floatValue();
+			float psi 	= ((Number)jo.get("psi")).floatValue();
+			
+			State.addTarget(State.getInstance().new Target(lat,lng,theta,phi,psi));
+		}
+	}
+	
 	public static void setOrientation(float[] orientation) {
 		if (orientation == null)
 			return;
 		getInstance().orientation.setValues(orientation);
 		getInstance().orientations.add(getInstance().orientation);
-		if(getInstance().orientations.size() > 3)
+		if (getInstance().orientations.size() > 3)
 			getInstance().orientations.removeFirst();
 		getInstance().notifyListeners();
-		
+
 	}
 
 	public static Orientation getOrientation() {
@@ -98,7 +183,7 @@ public class State {
 			return;
 		getInstance().location = location;
 		getInstance().locations.add(location);
-		if(getInstance().locations.size() > 3)
+		if (getInstance().locations.size() > 3)
 			getInstance().locations.removeFirst();
 		getInstance().notifyListeners();
 	}
@@ -144,11 +229,13 @@ public class State {
 	/*
 	 * Debugging
 	 */
-	
+
 	private static final String TAG = "State";
-	private static void debug(){
+
+	private static void debug() {
 		getInstance();
 		Log.d(TAG, "orientation");
-		Log.d(TAG, new Float(State.getOrientation().getCompassDirection()).toString());
+		Log.d(TAG, new Float(State.getOrientation().getCompassDirection())
+				.toString());
 	}
 }
