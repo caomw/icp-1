@@ -16,8 +16,6 @@ package edu.mit.media.icp.client.graphics;
  * limitations under the License.
  */
 
-import java.util.ArrayList;
-
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -29,15 +27,15 @@ import edu.mit.media.icp.client.State;
  * Render a pair of tumbling cubes.
  */
 
-class CubeRenderer implements GLSurfaceView.Renderer {
+class ICPRenderer implements GLSurfaceView.Renderer {
 	private float mPitch;
 	private float mRoll;
 	private Frusta f;
-
-	public CubeRenderer(boolean useTranslucentBackground) {
+	private Drawable mDrawable;
+	
+	public ICPRenderer(Drawable drawable, boolean useTranslucentBackground) {
 		mTranslucentBackground = useTranslucentBackground;
-		mCube = new Cube();
-		
+		mDrawable = drawable;
 	}
 
 	public void onDrawFrame(GL10 gl) {
@@ -47,14 +45,14 @@ class CubeRenderer implements GLSurfaceView.Renderer {
 		 */
 
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
-		gl.glPointSize(5);
+
 		/*
 		 * Now we're ready to draw some 3D objects
 		 */
 
 		gl.glMatrixMode(GL10.GL_MODELVIEW);
 		gl.glLoadIdentity();
-		gl.glTranslatef(0, 0, -3.0f);
+		gl.glTranslatef(0, 0, -6.0f);
 
 		gl.glRotatef(mAngle, 0, 1, 0);
 		// gl.glRotatef(mPitch, 1, 0, 0);
@@ -105,7 +103,7 @@ class CubeRenderer implements GLSurfaceView.Renderer {
 
 		gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
 		gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
-		mCube.draw(gl);
+		mDrawable.draw(gl);
 		
 	}
 
@@ -149,6 +147,5 @@ class CubeRenderer implements GLSurfaceView.Renderer {
 	}
 
 	private boolean mTranslucentBackground;
-	private Cube mCube;
 	private float mAngle;
 }

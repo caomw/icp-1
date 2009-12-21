@@ -91,7 +91,7 @@ class Cube
         gl.glFrontFace(GL10.GL_CW);
         gl.glVertexPointer(3, GL10.GL_FIXED, 0, mVertexBuffer);
         gl.glColorPointer(4, GL10.GL_FIXED, 0, mColorBuffer);
-        gl.glDrawElements(GL10.GL_TRIANGLES, 36, GL10.GL_UNSIGNED_BYTE, mIndexBuffer);
+        gl.glDrawElements(GL10.GL_POINTS, 36, GL10.GL_UNSIGNED_BYTE, mIndexBuffer);
     }
 
     private IntBuffer   mVertexBuffer;
